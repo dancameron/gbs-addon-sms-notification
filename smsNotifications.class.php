@@ -117,7 +117,7 @@ class Group_Buying_SMS_Notifier extends Group_Buying_Controller {
 			);
 			$message = Group_Buying_Notifications::get_notification_content( self::NOTIFICATION_TYPE, $data );
 
-			error_log( "mesage: " . print_r( $message, true ) );
+			if ( GBS_DEV ) error_log( "mesage: " . print_r( $message, true ) );
 			// And send
 			self::send_sms( $formatted_mobile_number, $message );
 			// Log that the message was sent
@@ -132,16 +132,23 @@ class Group_Buying_SMS_Notifier extends Group_Buying_Controller {
 		$account_sid = self::$twilio_account; // Your Twilio account sid
 		$auth_token = self::$twilio_auth; // Your Twilio auth token
 		$twilio_number = '+'.preg_replace( "/[^0-9]/", '', self::$twilio_number ); // Your Twilio auth token
-		error_log( "sid: " . print_r( $account_sid, true ) );
-		error_log( "auth token: " . print_r( $auth_token, true ) );
-		error_log( "number: " . print_r( $twilio_number, true ) );
-		$twilio_client = new Services_Twilio( $account_sid, $auth_token );
-		$message = $twilio_client->account->sms_messages->create(
-			$twilio_number, // From a Twilio number in your account
-			$recipient,
-			$message
-		);
-		error_log( "message cleint: " . print_r( $message , true ) );
+		if ( GBS_DEV ) error_log( "sid: " . print_r( $account_sid, true ) );
+		if ( GBS_DEV ) error_log( "auth token: " . print_r( $auth_token, true ) );
+		if ( GBS_DEV ) error_log( "number: " . print_r( $twilio_number, true ) );
+
+		try {
+			$twilio_client = new Services_Twilio( $account_sid, $auth_token );
+			error_log( "twillio client: " . print_r( $twilio_client, true ) );
+			$message = $twilio_client->account->sms_messages->create(
+				$twilio_number, // From a Twilio number in your account
+				$recipient,
+				$message
+			);
+		} catch (Exception $e) {
+			throw new Exception( 'Something really gone wrong', 0, $e);
+		}
+
+		if ( GBS_DEV ) error_log( "message client: " . print_r( $message , true ) );
 	}
 
 	public static function register_settings_fields() {
@@ -153,17 +160,17 @@ class Group_Buying_SMS_Notifier extends Group_Buying_Controller {
 		register_setting( $page, self::AUTH );
 		register_setting( $page, self::NUMBER );
 		// Fields
-		add_settings_field( self::ACCOUNT, self::__( 'Twilio Account SID' ), array( get_class(), 'display_twilio_auth_option' ), $page, $section );
-		add_settings_field( self::AUTH, self::__( 'Twilio Authentication Token' ), array( get_class(), 'display_twilio_account_option' ), $page, $section );
+		add_settings_field( self::ACCOUNT, self::__( 'Twilio Account SID' ), array( get_class(), 'display_twilio_account_option' ), $page, $section );
+		add_settings_field( self::AUTH, self::__( 'Twilio Authentication Token' ), array( get_class(), 'display_twilio_auth_option' ), $page, $section );
 		add_settings_field( self::NUMBER, self::__( 'From Number: Twilio number in your account' ), array( get_class(), 'display_twilio_number_option' ), $page, $section );
 	}
 
 	public static function display_twilio_account_option() {
-		echo '<input name="'.self::AUTH.'" id="'.self::AUTH.'" type="text" value="'.self::$twilio_account.'">';
+		echo '<input name="'.self::ACCOUNT.'" id="'.self::ACCOUNT.'" type="text" value="'.self::$twilio_account.'">';
 	}
 
 	public static function display_twilio_auth_option() {
-		echo '<input name="'.self::ACCOUNT.'" id="'.self::ACCOUNT.'" type="text" value="'.self::$twilio_auth.'">';
+		echo '<input name="'.self::AUTH.'" id="'.self::AUTH.'" type="text" value="'.self::$twilio_auth.'">';
 	}
 
 	public static function display_twilio_number_option() {
@@ -267,20 +274,12 @@ class Mobile_Registration_Fields extends Group_Buying_Controller {
 	 * @return null
 	 */
 	public static function process_form( Group_Buying_Account $account ) {
+		delete_post_meta( $account->get_ID(), '_'.self::MOBILE_NUMBER );
 		// Copy all of the new fields below, copy the below if it's a basic field.
 		if ( isset( $_POST[self::MOBILE_NUMBER] ) && $_POST[self::MOBILE_NUMBER] != '' ) {
 			// TODO check length and throw and error
-
-			delete_post_meta( $account->get_ID(), '_'.self::MOBILE_NUMBER );
 			add_post_meta( $account->get_ID(), '_'.self::MOBILE_NUMBER, $_POST[self::MOBILE_NUMBER] );
 		}
-		// Below is a commented out process to uploaded images
-		/*/
-		if ( !empty($_FILES[self::UPLOAD]) ) {
-		 	// Set the uploaded field as an attachment
-			self::set_attachement( $account->get_ID(), $_FILES );
-		}
-		/**/
 	}
 
 	/**
