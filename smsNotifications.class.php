@@ -136,17 +136,14 @@ class Group_Buying_SMS_Notifier extends Group_Buying_Controller {
 		if ( GBS_DEV ) error_log( "auth token: " . print_r( $auth_token, true ) );
 		if ( GBS_DEV ) error_log( "number: " . print_r( $twilio_number, true ) );
 
-		try {
-			$twilio_client = new Services_Twilio( $account_sid, $auth_token );
-			error_log( "twillio client: " . print_r( $twilio_client, true ) );
-			$message = $twilio_client->account->sms_messages->create(
-				$twilio_number, // From a Twilio number in your account
-				$recipient,
-				$message
-			);
-		} catch (Exception $e) {
-			throw new Exception( 'Something really gone wrong', 0, $e);
-		}
+		$twilio_client = new Services_Twilio( $account_sid, $auth_token );
+		error_log( "twillio client: " . print_r( $twilio_client, true ) );
+		$message = $twilio_client->account->sms_messages->create(
+			$twilio_number, // From a Twilio number in your account
+			$recipient,
+			$message
+		);
+		// TODO use the json API.
 
 		if ( GBS_DEV ) error_log( "message client: " . print_r( $message , true ) );
 	}
