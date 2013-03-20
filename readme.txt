@@ -19,6 +19,6 @@ http://groupbuyingsite.com/forum/showthread.php?6624-Installation-Guide&p=29825#
 
 Release Notes
 -------------
-
+1.2 - Error handling
 1.1 - Guide Updates and small bug fixes
 1.0 - Initial Release

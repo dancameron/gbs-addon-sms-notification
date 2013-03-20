@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Group Buying Addon - SMS Notifier
-Version: 1.1
+Version: 1.2
 Plugin URI: http://groupbuyingsite.com/marketplace
 Description: Creates and sends SMS notifications for GBS
 Author: Sprout Venture
