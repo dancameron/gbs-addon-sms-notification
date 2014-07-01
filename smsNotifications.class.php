@@ -77,7 +77,11 @@ class Group_Buying_SMS_Notifier extends Group_Buying_Controller {
 	}
 
 	public static function voucher_url_shortcode( $atts, $content, $code, $data ) {
-		// Get the deal_id and permalink, then add the anchor
+		if ( isset( $data['voucher'] ) ) {
+			$voucher = $data['voucher'];
+			return get_permalink( $voucher->get_ID() );
+		}
+		return '';
 	}
 
 	public function voucher_notification( $voucher ) {
@@ -91,7 +95,7 @@ class Group_Buying_SMS_Notifier extends Group_Buying_Controller {
 			return;
 		}
 
-		$account = Group_Buying_Account::get_instance_by_id( $account_id );
+		$account = SEC_Account::get_instance_by_id( $account_id );
 		if ( !is_a( $account, 'Group_Buying_Account' ) )
 			return;
 
@@ -252,7 +256,7 @@ class Mobile_Registration_Fields extends Group_Buying_Controller {
 	 * @return null
 	 */
 	public function process_registration( $user = null, $user_login = null, $user_email = null, $password = null, $post = null ) {
-		$account = Group_Buying_Account::get_instance( $user->ID );
+		$account = SEC_Account::get_instance( $user->ID );
 		// using the single callback below
 		self::process_form( $account );
 	}
